@@ -24,7 +24,7 @@ public class DeezerTrack: Codable {
     public let shortTitle: String
     
     /// The track version
-    public let titleVersion: String
+    public let titleVersion: String?
     
     /// The url of the track on Deezer
     public let link: URL

@@ -35,6 +35,8 @@ class DeezerURLRequestsFactory {
     let scheme = "https"
     let host = "api.deezer.com"
     let searchEndpoint = "/search/"
+    let chart = "/chart/"
+    let albums = "albums"
     
     func searchURLRequest(phrases: [String],
                           kinds: [SearchKind]? = nil,
@@ -67,6 +69,12 @@ class DeezerURLRequestsFactory {
         components.queryItems = queryItems
         guard let url = components.url else { fatalError() }
         return URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 12)
+    }
+    
+    func getTopAlbumsRequest() -> URLRequest {
+        var components = urlComponents()
+        components.path = chart + "0/" + albums
+        return URLRequest(url: components.url!, cachePolicy: .reloadIgnoringLocalAndRemoteCacheData, timeoutInterval: 15)
     }
     
     private func urlComponents() -> URLComponents {

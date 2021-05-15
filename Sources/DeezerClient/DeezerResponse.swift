@@ -12,4 +12,10 @@ public class DeezerResponse<Resource: Codable>: Codable {
     public let data: [Resource]
     public let total: Int
     public let next: URL?
+    
+    init() {
+        total = 0
+        data = []
+        next = nil
+    }
 }

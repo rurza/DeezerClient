@@ -9,11 +9,10 @@
 import Foundation
 import Combine
 
-public protocol DeezerClientCacheProvider: class {
+public protocol DeezerClientCacheProvider: AnyObject {
     func cachedResponseForRequest<Resource: Codable>(_ request: URLRequest) -> DeezerResponse<Resource>?
     func saveResponse<Resource: Codable>(_ response: DeezerResponse<Resource>, forRequest req: URLRequest)
 }
-
 
 public class DeezerClient {
     
@@ -38,14 +37,13 @@ public class DeezerClient {
         return makeRequestPublisher(request)
     }
     
-    fileprivate func makeRequestPublisher<Item>(_ request: URLRequest) -> AnyPublisher<DeezerResponse<Item>, Error> where Item: Decodable {
-        #if DEBUG
-        print("DeezerClient DEBUG request: \(String(describing:request.curl))")
-        #endif
-        if let r = cacheProvider?.cachedResponseForRequest(request) as DeezerResponse<Item>? {
-            #if DEBUG
-            print("DeezerClient DEBUG ... using cached")
-            #endif
+    public func getTopAlbumsChart() -> AnyPublisher<DeezerResponse<DeezerAlbum>, Error> {
+        let r = urlRquestsFactory.getTopAlbumsRequest()
+        return makeRequestPublisher(r, useCache: false)
+    }
+    
+    fileprivate func makeRequestPublisher<Item>(_ request: URLRequest, useCache: Bool = true) -> AnyPublisher<DeezerResponse<Item>, Error> where Item: Decodable {
+        if let r = cacheProvider?.cachedResponseForRequest(request) as DeezerResponse<Item>?, useCache {
             return Future<DeezerResponse<Item>, Error> { future in
                 future(.success(r))
             }.eraseToAnyPublisher()
