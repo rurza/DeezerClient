@@ -32,6 +32,11 @@ public class DeezerClient {
         return makeRequestPublisher(request)
     }
     
+    public func searchForAlbum(named albumName: String, byArtist artist: String) -> AnyPublisher<DeezerResponse<DeezerTrack>, Error> {
+        let request = urlRquestsFactory.searchURLRequest(phrases: [albumName, artist], kinds: [.album, .artist], strictSearch: false)
+        return makeRequestPublisher(request)
+    }
+    
     public func searchForTrack(withTitle title: String, fromArtist artist: String) -> AnyPublisher<DeezerResponse<DeezerTrack>, Error> {
         let request = urlRquestsFactory.searchURLRequest(phrases: [artist, title], kinds: [.artist, .track])
         return makeRequestPublisher(request)
