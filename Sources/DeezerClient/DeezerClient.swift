@@ -41,10 +41,16 @@ public class DeezerClient {
         let request = urlRquestsFactory.searchURLRequest(phrases: [artist, title], kinds: [.artist, .track])
         return makeRequestPublisher(request)
     }
-    
+
+    @available(*, deprecated, message: "Use the async version")
     public func getTopAlbumsChart() -> AnyPublisher<DeezerResponse<DeezerAlbum>, Error> {
         let r = urlRquestsFactory.getTopAlbumsRequest()
         return makeRequestPublisher(r, useCache: false)
+    }
+
+    public func getTopAlbumsChart() async throws -> DeezerResponse<DeezerAlbum> {
+        let r = urlRquestsFactory.getTopAlbumsRequest()
+        return try await executeRequest(r)
     }
     
     fileprivate func makeRequestPublisher<Item>(_ request: URLRequest, useCache: Bool = true) -> AnyPublisher<DeezerResponse<Item>, Error> where Item: Decodable {
@@ -73,7 +79,27 @@ public class DeezerClient {
         .receive(on: DispatchQueue.main)
         .eraseToAnyPublisher()
     }
-    
+
+    private func executeRequest<Item: Codable>(_ request: URLRequest, useCache: Bool = false) async throws -> DeezerResponse<Item> {
+        if let cached = cacheProvider?.cachedResponseForRequest(request) as DeezerResponse<Item>?, useCache {
+            return cached
+        }
+        let (data, _) = try await session.data(for: request)
+        let decoder = JSONDecoder()
+        if let serviceError = try? decoder.decode(DeezerWrappedError.self, from: data) {
+            let error = serviceError.error
+            throw NSError(domain: error.type.rawValue,
+                          code: error.code.rawValue,
+                          userInfo: [NSLocalizedDescriptionKey: error.message])
+        } else {
+            let response = try decoder.decode(
+                DeezerResponse<Item>.self,
+                from: data
+            )
+            cacheProvider?.saveResponse(response, forRequest: request)
+            return response
+        }
+    }
 }
 
 public class DeezerError: Codable {
