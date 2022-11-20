@@ -8,7 +8,7 @@
 
 import Foundation
 
-public class DeezerAlbum: Codable {
+public class DeezerAlbum: Codable, @unchecked Sendable {
     
     /// The Deezer album id
     public let id: Int
@@ -58,7 +58,7 @@ public class DeezerAlbum: Codable {
     
 }
 
-public class DeezerExtendedAlbum: DeezerAlbum
+public final class DeezerExtendedAlbum: DeezerAlbum
 {
     /// The album UPC
     public let upc: String
